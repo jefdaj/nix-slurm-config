@@ -1,7 +1,4 @@
 {
-
-  # TODO should nix itself be in here? currently in user env i think
-
   nix.extraOptions = ''
     # set to match slurm's --ncpus-per-task=20 and nix's -j20
     binary-caches-parallel-connections = 20
@@ -10,34 +7,37 @@
 
   packageOverrides = pkgs: with pkgs; {
 
-    # gnutls = pkgs.gnutls.override {
-    #   guileBindings = false;
-    # };
-
     nix = pkgs.nix.override {
       storeDir = "/clusterfs/rosalind/users/jefdaj/nix/store";
       stateDir = "/clusterfs/rosalind/users/jefdaj/nix/var";
     };
 
-    all = with pkgs; let
+    all = let
 
-      # things i packaged but haven't added to nixpkgs
+      myNix = with pkgs; [
+        # TODO why does this need to be duplicated here??
+        (pkgs.nix.override {
+          storeDir = "/clusterfs/rosalind/users/jefdaj/nix/store";
+          stateDir = "/clusterfs/rosalind/users/jefdaj/nix/var";
+        })
+        nix-repl
+        makeWrapper
+      ];
+
+      # biology stuff, most of which i wrote or packaged
       shortcut  = import /global/home/users/jefdaj/shortcut;
-      # tnseq7942 = callPackage ./tnseq7942 {};
-
-      myCustom = [
-        # not sure yet:
-        FEBA
-        aliview
-        emboss
-        igvtools
-
-        # build/dependency errors:
-        # shortcut # TODO need to fix texlive URL first?
+      tnseq7942 = import /global/home/users/jefdaj/tnseq7942;
+      myBio = with pkgs; [
+        # broken:
+        # aliview # can't find file
+        # shortcut
         # tnseq7942
 
         # working:
+        FEBA
         clustal-omega
+        emboss
+        igvtools
         kallisto
         ncbi-blast
         raxml
@@ -45,17 +45,12 @@
         viennarna
       ];
 
-      myMisc = [
-        # not sure yet:
+      myMisc = with pkgs; [
         ghostscript
         jdk
         libxml2
         maven
         ruby
-
-        # working:
-        rubber
-        pandoc
         automake
         cmake
         curl
@@ -65,9 +60,6 @@
         gzip
         htop
         less
-        makeWrapper
-        # nix # TODO replace the one from user env
-        nix-repl
         parallel
         perl
         procps
@@ -78,31 +70,30 @@
         zlib
       ];
 
-      myHaskell = [
-        # build errors:
-        stack
+      myHaskell = with pkgs; [
+        # broken:
+        # stack
 
         # working:
+        pandoc
         (haskellPackages.ghcWithPackages (hsPkgs: with hsPkgs; [
           cabal-install
         ]))
       ];
 
-      myPython = with pythonPackages; [
+      myPython = with pkgs.pythonPackages; [
         # build errors:
+        # gdata # just takes over an hour?
         # ipython
         # pillow
-
-        # not sure yet:
-        # gdata # just takes over an hour?
-        wxPython
-        matplotlib
+        # wxPython
 
         # working:
-        pandas
-        numpy
         biopython # one of mine!
         docopt
+        matplotlib
+        numpy
+        pandas
         pip 
         progressbar
         python
@@ -111,14 +102,9 @@
         virtualenv
       ];  
 
-      myR = with rPackages; [
-        # build errors:
-        # AnnotationDBI
-
-        # not sure yet:
+      myR = with pkgs.rPackages; [
         R
-        edgeR
-        ggtree
+        AnnotationDbi
         Biobase
         BiocInstaller
         IRanges
@@ -129,8 +115,10 @@
         directlabels
         docopt
         dplyr
+        edgeR
         ggplot2
         ggrepel
+        ggtree
         gridExtra
         locfit
         mgcv
@@ -141,11 +129,18 @@
         tidyr
         xml2
       ];
+
+      myTex = with pkgs; [
+        rubber
+        (texlive.combine {
+          inherit (texlive) scheme-small;
+        })
+      ];
   
     in buildEnv {
       name = "all";
-      paths = myCustom ++ myHaskell ++ myMisc ++ myPython ++ myR;
+      paths = myNix ++ myBio ++ myHaskell ++ myMisc ++ myPython
+                    ++ myR ++ myTex;
     };
   };
-
 }
