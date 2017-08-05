@@ -2,12 +2,12 @@
 
 #SBATCH --job-name=nix
 #SBATCH --output=/global/home/users/jefdaj/nix.log
-#SBATCH --time=03:00:00
+#SBATCH --time=01:00:00
 #SBATCH --account=co_rosalind
-#SBATCH --partition=savio
-#SBATCH --qos=rosalind_savio_normal
+#SBATCH --partition=savio2_htc
+#SBATCH --qos=rosalind_htc2_normal
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=20
+#SBATCH --cpus-per-task=12
 
 module load gcc/4.8.1
 module load glib/2.32.4
@@ -23,7 +23,9 @@ for n in {1..10}; do
 
   # Need to clone my nix-no-root repo before running this
   /global/home/users/jefdaj/nix-no-root/nix-no-root.sh \
-    /global/home/users/jefdaj/nix-boot \
-    /clusterfs/rosalind/users/jefdaj/nix -n20 && break
+    /clusterfs/rosalind/users/jefdaj/nix-boot \
+    /clusterfs/rosalind/users/jefdaj/nix -j$SLURM_CPUS_PER_TASK && break
+
+  sleep 10
 
 done

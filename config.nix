@@ -8,32 +8,32 @@
   packageOverrides = pkgs: with pkgs; {
 
     nix = pkgs.nix.override {
-      storeDir = "/clusterfs/rosalind/users/jefdaj/nix/store";
       stateDir = "/clusterfs/rosalind/users/jefdaj/nix/var";
+      storeDir = "/clusterfs/rosalind/users/jefdaj/nix/store";
     };
 
     all = let
 
       myNix = with pkgs; [
-        # TODO why does this need to be duplicated here??
-        (pkgs.nix.override {
-          storeDir = "/clusterfs/rosalind/users/jefdaj/nix/store";
-          stateDir = "/clusterfs/rosalind/users/jefdaj/nix/var";
-        })
-        nix-repl
+        # Note: nix itself is installed separately with `nix-env -i`
+        # cabal2nix
+        # nix-prefetch-hg
+        # nix-prefetch-scripts
         makeWrapper
+        nix-generate-from-cpan
+        nix-prefetch-bzr
+        nix-prefetch-cvs
+        nix-prefetch-git
+        nix-prefetch-svn
+        nix-repl
       ];
 
       # biology stuff, most of which i wrote or packaged
       shortcut  = import /global/home/users/jefdaj/shortcut;
       tnseq7942 = import /global/home/users/jefdaj/tnseq7942;
       myBio = with pkgs; [
-        # broken:
         # aliview # can't find file
-        # shortcut
         # tnseq7942
-
-        # working:
         FEBA
         clustal-omega
         emboss
@@ -41,56 +41,54 @@
         kallisto
         ncbi-blast
         raxml
+        shortcut
         trimal
         viennarna
       ];
 
+      myHaskell = with pkgs; [
+        # gitAndTools.gitAnnex
+        pandoc
+        stack
+        (haskellPackages.ghcWithPackages (hsPkgs: with hsPkgs; [
+          cabal-install
+          # TODO yesod-bin?
+        ]))
+      ];
+
       myMisc = with pkgs; [
-        ghostscript
-        jdk
-        libxml2
-        maven
-        ruby
         automake
         cmake
         curl
-        git
+        fontconfig
+        git # should this be part of gitAndTools?
         gnumake
         graphviz
         gzip
         htop
         less
+        libxml2
+        maven   # TODO myJava?
+        openjdk # TODO myJava?
         parallel
         perl
         procps
         ranger
         readline
+        rsync
+        ruby
         tree
         unzip
         zlib
       ];
 
-      myHaskell = with pkgs; [
-        # broken:
-        # stack
-
-        # working:
-        pandoc
-        (haskellPackages.ghcWithPackages (hsPkgs: with hsPkgs; [
-          cabal-install
-        ]))
-      ];
-
       myPython = with pkgs.pythonPackages; [
-        # build errors:
-        # gdata # just takes over an hour?
         # ipython
         # pillow
         # wxPython
-
-        # working:
         biopython # one of mine!
         docopt
+        gdata # just takes over an hour?
         matplotlib
         numpy
         pandas
@@ -130,7 +128,9 @@
         xml2
       ];
 
+      # TODO add dependencies for dissertation? or is that separate?
       myTex = with pkgs; [
+        ghostscript
         rubber
         (texlive.combine {
           inherit (texlive) scheme-small;
