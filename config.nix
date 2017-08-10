@@ -47,16 +47,19 @@
       ];
 
       myHaskell = with pkgs; [
-        # gitAndTools.gitAnnex
+        gitAndTools.git-annex
         pandoc
         stack
         (haskellPackages.ghcWithPackages (hsPkgs: with hsPkgs; [
           cabal-install
+          ncurses # needed by haskeline?
+          terminfo
           # TODO yesod-bin?
         ]))
       ];
 
       myMisc = with pkgs; [
+        ncurses # needed by haskeline?
         automake
         cmake
         curl
@@ -68,8 +71,6 @@
         htop
         less
         libxml2
-        maven   # TODO myJava?
-        openjdk # TODO myJava?
         parallel
         perl
         procps
@@ -82,22 +83,27 @@
         zlib
       ];
 
+      myJava = with pkgs; [
+        openjdk
+        maven
+      ];
+
       myPython = with pkgs.pythonPackages; [
-        # ipython
-        # pillow
-        # wxPython
         biopython # one of mine!
         docopt
         gdata # just takes over an hour?
+        ipython
         matplotlib
         numpy
         pandas
+        pillow
         pip 
         progressbar
         python
         scipy
         tkinter
         virtualenv
+        wxPython
       ];  
 
       myR = with pkgs.rPackages; [
@@ -139,7 +145,7 @@
   
     in buildEnv {
       name = "all";
-      paths = myNix ++ myBio ++ myHaskell ++ myMisc ++ myPython
+      paths = myNix ++ myBio ++ myHaskell ++ myJava ++ myMisc ++ myPython
                     ++ myR ++ myTex;
     };
   };
