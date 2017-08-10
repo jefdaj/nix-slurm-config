@@ -55,7 +55,8 @@ I only use `nix-env -i` to test installing new packages. Then if they work I
 
 To prevent corrupting the Nix database:
 
-* Make regular backups in case of power outages or similar
+* Make regular backups in case of power outages or similar.
+  I go into the nix install dir occasionally and run `tar -cvf var_$(date '+%Y-%m-%d').tar var`.
 
 * Only run one instance of Nix at a time, even if you have lots of machines available.
   Set `-j` to the number of cores as you want, but stick to one node.
